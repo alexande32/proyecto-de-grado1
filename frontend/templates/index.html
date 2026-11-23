@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Irrigation | IoT Dashboard</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#153b2c">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">🌱</div>
+        <div>
+            <h2>Smart Irrigation</h2>
+            <span>SMART FARMING SYSTEM</span>
+        </div>
+    </div>
+
+    <p class="menu-label">MENÚ PRINCIPAL</p>
+
+    <nav>
+        <a href="#inicio" class="active">
+            <span>▦</span> Dashboard
+        </a>
+        <a href="#sensores">
+            <span>◉</span> Sensores
+        </a>
+        <a href="#control">
+            <span>💧</span> Control de riego
+        </a>
+        <a href="#historial">
+            <span>▤</span> Historial
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="system-indicator">
+            <span class="system-dot"></span>
+            <div>
+                <strong>Sistema IoT</strong>
+                <small>Panel de monitoreo</small>
+            </div>
+        </div>
+        <p class="version">SMART IRRIGATION v1.0</p>
+    </div>
+</div>
+
+<main class="content">
+
+    <header class="topbar">
+        <div class="heading">
+            <span class="eyebrow">CENTRO DE MONITOREO</span>
+            <h1>Dashboard</h1>
+            <p>Administra y supervisa tu sistema inteligente de riego.</p>
+        </div>
+
+        <div class="topbar-actions">
+            <div class="connection">
+                <span class="dot" id="connectionDot"></span>
+                <span id="connectionStatus">Comprobando...</span>
+            </div>
+
+            <button id="themeToggle" class="theme-toggle">
+                🌙 Modo oscuro
+            </button>
+        </div>
+    </header>
+
+    <section id="inicio" class="welcome-panel">
+        <div>
+            <span class="welcome-tag">🌿 SMART AGRICULTURE</span>
+            <h2>Control inteligente de tus cultivos</h2>
+            <p>Monitorea la humedad del suelo y supervisa tu sistema de riego desde un solo lugar.</p>
+        </div>
+        <div class="welcome-decoration">🌱</div>
+    </section>
+
+    <section class="section-heading">
+        <div>
+            <span class="eyebrow">RESUMEN GENERAL</span>
+            <h2>Estado del sistema</h2>
+        </div>
+        <span class="live-label"><span></span> MONITOREO</span>
+    </section>
+
+    <section class="cards">
+
+        <div class="card humidity-card">
+            <div class="card-top">
+                <div class="card-icon humidity-icon">💧</div>
+                <span class="card-tag">SENSOR</span>
+            </div>
+            <h3>Humedad del suelo</h3>
+            <h2 id="humidity">--%</h2>
+            <p>Última medición registrada</p>
+        </div>
+
+        <div class="card pump-card">
+            <div class="card-top">
+                <div class="card-icon pump-icon">🚿</div>
+                <span class="card-tag">ACTUADOR</span>
+            </div>
+            <h3>Bomba de agua</h3>
+            <h2 id="pumpStatus">Desconocida</h2>
+            <p>Estado del sistema de bombeo</p>
+        </div>
+
+        <div class="card device-card">
+            <div class="card-top">
+                <div class="card-icon device-icon">📡</div>
+                <span class="card-tag">ESP32</span>
+            </div>
+            <h3>Dispositivo</h3>
+            <h2 id="deviceStatus">Desconectado</h2>
+            <p>Estado de conexión del dispositivo</p>
+        </div>
+
+    </section>
+
+    <section id="control" class="panel control-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">GESTIÓN DEL SISTEMA</span>
+                <h2>Control de riego</h2>
+                <p>Control manual de la bomba de agua.</p>
+            </div>
+            <div class="panel-icon">💦</div>
+        </div>
+
+        <div class="control-content">
+            <div class="control-description">
+                <strong>Control de la bomba</strong>
+                <p>Los comandos remotos estarán disponibles cuando se conecte el sistema de comunicación con el ESP32.</p>
+            </div>
+
+            <div class="buttons">
+                <button id="onButton" class="btn-on" type="button">
+                    <span>▶</span> Encender bomba
+                </button>
+
+                <button id="offButton" class="btn-off" type="button">
+                    <span>■</span> Apagar bomba
+                </button>
+            </div>
+        </div>
+
+        <p id="controlMessage" class="control-message">
+            <span>●</span> Control remoto pendiente de conexión.
+        </p>
+    </section>
+
+    <section id="sensores" class="panel chart-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">DATOS EN TIEMPO REAL</span>
+                <h2>Monitoreo de humedad</h2>
+                <p>Historial gráfico de las mediciones del suelo.</p>
+            </div>
+            <div class="panel-icon">📈</div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="humidityChart"></canvas>
+        </div>
+    </section>
+
+    <section id="historial" class="panel history-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">REGISTRO DE DATOS</span>
+                <h2>Últimas mediciones</h2>
+                <p>Consulta los registros almacenados en la base de datos.</p>
+            </div>
+            <div class="panel-icon">📋</div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Humedad</th>
+                        <th>Valor sensor</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <span>🌱 Smart Irrigation</span>
+        <span>Sistema inteligente de monitoreo y riego</span>
+    </footer>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
