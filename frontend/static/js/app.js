@@ -119,17 +119,20 @@ async function updateHistory() {
 
 // Inicializar
 document.addEventListener("DOMContentLoaded", () => {
-    initializeTheme();
 
+    initializeTheme();
     createChart();
 
     updateStatus();
     updateHistory();
 
+    initializePumpControls();
+    updatePumpStatus();
+
     setInterval(updateStatus, 5000);
     setInterval(updateHistory, 10000);
-});
 
+});
 
 function initializeTheme() {
     const themeButton = document.getElementById("themeToggle");
@@ -167,4 +170,79 @@ function initializeTheme() {
 }
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js").catch(console.error);
+}
+// Consultar el estado de la bomba
+async function updatePumpStatus() {
+    try {
+        const response = await fetch(`${API}/api/pump`);
+
+        if (!response.ok) {
+            throw new Error("No se pudo consultar la bomba");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("pumpStatus").textContent =
+            data.pump_on ? "Encendida" : "Apagada";
+
+    } catch (error) {
+        console.error("Error al consultar la bomba:", error);
+    }
+}
+
+
+// Encender o apagar la bomba
+async function setPumpState(state) {
+
+    const message = document.getElementById("controlMessage");
+    const onButton = document.getElementById("onButton");
+    const offButton = document.getElementById("offButton");
+
+    try {
+        onButton.disabled = true;
+        offButton.disabled = true;
+
+        message.textContent = "Enviando comando...";
+
+        const response = await fetch(`${API}/api/pump`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ state: state })
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al enviar el comando");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("pumpStatus").textContent =
+            data.pump_on ? "Encendida" : "Apagada";
+
+        message.textContent = data.message;
+
+    } catch (error) {
+        console.error(error);
+        message.textContent = "No se pudo controlar la bomba.";
+
+    } finally {
+        onButton.disabled = false;
+        offButton.disabled = false;
+    }
+}
+
+
+// Configurar los botones
+function initializePumpControls() {
+
+    document.getElementById("onButton").addEventListener("click", () => {
+        setPumpState("on");
+    });
+
+    document.getElementById("offButton").addEventListener("click", () => {
+        setPumpState("off");
+    });
+
 }
