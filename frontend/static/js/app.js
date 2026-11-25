@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setInterval(updateStatus, 5000);
     setInterval(updateHistory, 10000);
+    setInterval(updatePumpStatus, 3000);
 
 });
 

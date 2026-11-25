@@ -1,4 +1,7 @@
+import json
 
+from database import Base, engine, get_db, SessionLocal
+from mqtt_client import start_mqtt, stop_mqtt
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -89,6 +92,62 @@ class SensorReading(Base):
 # ==========================================
 
 Base.metadata.create_all(bind=engine)
+
+# ==========================================
+# RECEPCIÓN DE DATOS MQTT
+# ==========================================
+
+def receive_mqtt_message(client, userdata, message):
+    print("MENSAJE MQTT RECIBIDO:", repr(message.payload))
+    db = SessionLocal()
+
+    try:
+        payload = json.loads(message.payload.decode("utf-8"))
+
+        humidity = float(payload["humidity"])
+        soil_raw = payload.get("soil_raw")
+
+        if not 0 <= humidity <= 100:
+            print("Humedad fuera del rango permitido")
+            return
+
+        reading = SensorReading(
+            humidity=humidity,
+            soil_raw=int(soil_raw) if soil_raw is not None else None
+        )
+
+        db.add(reading)
+        db.commit()
+
+        print(
+            f"Medición MQTT guardada: "
+            f"Humedad={humidity}%, "
+            f"Valor del sensor={soil_raw}"
+        )
+
+    except Exception as error:
+        db.rollback()
+        print(f"Error procesando mensaje MQTT: {error}")
+
+    finally:
+        db.close()
+
+
+# ==========================================
+# INICIAR Y DETENER MQTT CON FASTAPI
+# ==========================================
+
+@app.on_event("startup")
+def startup_event():
+    print("Iniciando conexión MQTT...")
+    start_mqtt(receive_mqtt_message)
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    print("Cerrando conexión MQTT...")
+    stop_mqtt()
+
 
 
 # ==========================================
